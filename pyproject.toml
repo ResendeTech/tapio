@@ -57,6 +57,9 @@ quote-style = "double"
 indent-style = "space"
 line-ending = "auto"
 
+[tool.uv]
+package = true
+
 [dependency-groups]
 dev = [
     "mypy>=1.15.0",
