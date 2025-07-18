@@ -10,7 +10,8 @@ Tapio is a RAG (Retrieval Augmented Generation) tool for extracting, processing,
 - **End-to-end pipeline** - Crawl → Parse → Vectorize → Query workflow
 - **Local LLM integration** - Uses Ollama for private, local inference
 - **Semantic search** - ChromaDB vector database for relevant content retrieval
-- **Interactive chatbot** - Web interface for natural language queries
+- **Multiple interfaces** - Choose between Gradio (simple) or Google ADK (production-ready)
+- **Agent-based architecture** - Built on Google's Agent Development Kit for scalable AI workflows
 - **Flexible crawling** - Configurable depth and domain restrictions
 - **Comprehensive testing** - Full test suite for reliability
 
@@ -51,12 +52,13 @@ ollama pull llama3.2
 
 ### CLI Overview
 
-Tapio provides a four-step workflow:
+Tapio provides a comprehensive workflow with multiple interface options:
 
 1. **crawl** - Collect HTML content from websites
 2. **parse** - Convert HTML to structured Markdown
 3. **vectorize** - Create vector embeddings for semantic search
-4. **tapio-app** - Launch the interactive chatbot interface
+4. **adk-server** - Launch the production-ready ADK agent server (recommended)
+5. **tapio-app** - Launch the simple Gradio interface (legacy)
 
 Use `uv run -m tapio.cli --help` to see all commands or `uv run -m tapio.cli <command> --help` for command-specific options.
 
@@ -74,9 +76,54 @@ uv run -m tapio.cli parse migri
 # 3. Create vector embeddings
 uv run -m tapio.cli vectorize
 
-# 4. Launch chatbot interface
+# 4a. Launch ADK agent server (recommended)
+uv run -m tapio.cli adk-server
+
+# 4b. OR launch simple Gradio interface
 uv run -m tapio.cli tapio-app
 ```
+
+### Interface Options
+
+#### Google ADK Server (Recommended)
+
+The ADK implementation provides a production-ready agent interface:
+
+```bash
+# Start the ADK server
+uv run -m tapio.cli adk-server --model-name llama3.2
+
+# Development mode with auto-reload
+uv run -m tapio.cli dev
+```
+
+**Features:**
+- Professional web development UI at `http://localhost:8000`
+- Full REST API with documentation at `http://localhost:8000/docs`
+- Event tracking and debugging capabilities
+- Production-ready deployment options
+- Multi-agent workflow support
+
+#### Gradio Interface (Legacy)
+
+Simple web interface for quick testing:
+
+```bash
+# Start Gradio interface
+uv run -m tapio.cli tapio-app --model-name llama3.2
+```
+
+**Note:** The Gradio interface is maintained for backward compatibility but the ADK server is recommended for new deployments.
+
+### Model Management
+
+List available LLM models:
+
+```bash
+uv run -m tapio.cli list-models
+```
+
+Supported models include local Ollama models (llama3.2, mistral) and cloud models (Gemini).
 
 ### Available Sites
 

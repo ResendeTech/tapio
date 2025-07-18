@@ -24,10 +24,19 @@ dependencies = [
     "pydantic>=2.11.3",
     "httpx>=0.28.1",
     "beautifulsoup4>=4.13.4",
+    "google-adk>=1.7.0",
+    "google-generativeai>=0.8.3",
 ]
 
 [project.scripts]
 tapio = "tapio.cli:app"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["tapio"]
 
 [tool.pytest]
 testpaths = ["tests"]

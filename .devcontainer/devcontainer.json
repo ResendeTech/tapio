@@ -1,11 +1,20 @@
 {
-	"name": "Python 3",
-	"image": "mcr.microsoft.com/devcontainers/python:1-3.12-bookworm",
-	"features": {
-		"ghcr.io/va-h/devcontainers-features/uv:1": {},
-		"ghcr.io/prulloac/devcontainer-features/ollama:1": {}
+	"name": "Tapio Assistant - Python 3 with ADK",
+	"image": "python:3.12-slim",
+	"postCreateCommand": "apt-get update && apt-get install -y git curl build-essential && curl -LsSf https://astral.sh/uv/install.sh | sh && export PATH=\"/root/.cargo/bin:$PATH\" && curl -fsSL https://ollama.ai/install.sh | sh && uv sync --dev && echo 'Container setup complete! Run: uv run tapio adk-server --help'",
+	"forwardPorts": [8000, 8001, 11434],
+	"portsAttributes": {
+		"8000": {
+			"label": "Tapio ADK Server",
+			"onAutoForward": "openBrowser"
+		},
+		"8001": {
+			"label": "Tapio ADK Agent API"
+		},
+		"11434": {
+			"label": "Ollama API"
+		}
 	},
-	"postCreateCommand": "uv sync --dev && uv run pre-commit install",
 	"customizations": {
 		"vscode": {
 			"extensions": [

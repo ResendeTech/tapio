@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  tapio-adk:
+    build: .
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "11434:11434"
+    volumes:
+      - .:/workspace
+      - ollama_data:/root/.ollama
+    working_dir: /workspace
+    environment:
+      - PYTHONPATH=/workspace
+      - TAPIO_DEFAULT_MODEL=llama3.2
+    command: >
+      bash -c "
+        ollama serve &
+        sleep 10 &&
+        ollama list | grep -q llama3.2 || ollama pull llama3.2 &&
+        uv run tapio adk-server --host 0.0.0.0 --port 8000
+      "
+
+volumes:
+  ollama_data:
