@@ -1,12 +1,13 @@
 """Service for interacting with LLM models through Ollama and Gemini."""
 
 import logging
+import os
 from collections.abc import Generator
+from typing import Optional
 
 import ollama
-
-from tapio.config.model_config import get_model_config
 from tapio.config.settings import get_gemini_api_key, has_gemini_api_key
+from tapio.config.model_config import get_model_config
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -31,11 +32,11 @@ class LLMService:
         self.model_name = model_name
         self.max_tokens = max_tokens
         self.temperature = temperature
-
+        
         # Get model configuration
         self.model_config = get_model_config(model_name)
         self.provider = self.model_config.provider
-
+        
         # Initialize provider-specific clients
         self._setup_clients()
 
@@ -47,22 +48,22 @@ class LLMService:
                     "Gemini API key required for Gemini models. "
                     "Please set GEMINI_API_KEY, GOOGLE_API_KEY, or GOOGLE_AI_API_KEY environment variable."
                 )
-
+            
             try:
                 import google.generativeai as genai
-
                 api_key = get_gemini_api_key()
                 genai.configure(api_key=api_key)
                 self.gemini_client = genai.GenerativeModel(self.model_config.name)
                 logger.info(f"Configured Gemini client with model: {self.model_config.name}")
             except ImportError:
                 raise ImportError(
-                    "google-generativeai package required for Gemini models. Install with: uv add google-generativeai"
+                    "google-generativeai package required for Gemini models. "
+                    "Install with: uv add google-generativeai"
                 )
         elif self.provider == "ollama":
             # Ollama client is initialized as needed
             pass
-
+        
         logger.info(f"Initialized LLM service with model: {self.model_name} (provider: {self.provider})")
 
     def check_model_availability(self) -> bool:
@@ -73,8 +74,8 @@ class LLMService:
         """
         if self.provider == "gemini":
             # For Gemini, check if we have API key and the client is configured
-            return has_gemini_api_key() and hasattr(self, "gemini_client")
-
+            return has_gemini_api_key() and hasattr(self, 'gemini_client')
+            
         elif self.provider == "ollama":
             try:
                 models_response = ollama.list()
@@ -126,8 +127,7 @@ class LLMService:
 
                 if not model_exists:
                     logger.warning(
-                        f"{self.model_name} model not found in Ollama. "
-                        f"Please pull it with 'ollama pull {self.model_name}'"
+                        f"{self.model_name} model not found in Ollama. Please pull it with 'ollama pull {self.model_name}'",
                     )
                     return False
                 return True
@@ -135,7 +135,7 @@ class LLMService:
                 logger.warning(f"Could not connect to Ollama: {e}")
                 logger.warning("Make sure Ollama is running")
                 return False
-
+        
         return False
 
     def generate_response(self, prompt: str, system_prompt: str | None = None) -> str | dict:
@@ -162,18 +162,18 @@ class LLMService:
             full_prompt = prompt
             if system_prompt:
                 full_prompt = f"{system_prompt}\n\nUser: {prompt}"
-
+            
             response = self.gemini_client.generate_content(
                 full_prompt,
                 generation_config={
                     "temperature": self.temperature,
                     "max_output_tokens": self.max_tokens,
-                },
+                }
             )
             return response.text
         except Exception as e:
             logger.error(f"Error generating Gemini response: {e}")
-            return "Error: Could not generate a response from Gemini. Please check your API key and try again."
+            return f"Error: Could not generate a response from Gemini. Please check your API key and try again."
 
     def _generate_ollama_response(self, prompt: str, system_prompt: str | None = None) -> str:
         """Generate response using Ollama."""
@@ -220,38 +220,32 @@ class LLMService:
         else:
             raise ValueError(f"Unsupported provider: {self.provider}")
 
-    def _generate_gemini_response_stream(
-        self, prompt: str, system_prompt: str | None = None
-    ) -> Generator[str, None, None]:
+    def _generate_gemini_response_stream(self, prompt: str, system_prompt: str | None = None) -> Generator[str, None, None]:
         """Generate streaming response using Gemini API."""
         try:
             # Combine system prompt and user prompt
             full_prompt = prompt
             if system_prompt:
                 full_prompt = f"{system_prompt}\n\nUser: {prompt}"
-
+            
             response = self.gemini_client.generate_content(
                 full_prompt,
                 generation_config={
                     "temperature": self.temperature,
                     "max_output_tokens": self.max_tokens,
                 },
-                stream=True,
+                stream=True
             )
-
+            
             for chunk in response:
                 if chunk.text:
                     yield chunk.text
-
+                    
         except Exception as e:
             logger.error(f"Error generating Gemini streaming response: {e}")
-            yield (
-                "Error: Could not generate a streaming response from Gemini. Please check your API key and try again."
-            )
+            yield f"Error: Could not generate a streaming response from Gemini. Please check your API key and try again."
 
-    def _generate_ollama_response_stream(
-        self, prompt: str, system_prompt: str | None = None
-    ) -> Generator[str, None, None]:
+    def _generate_ollama_response_stream(self, prompt: str, system_prompt: str | None = None) -> Generator[str, None, None]:
         """Generate streaming response using Ollama."""
         try:
             messages = []

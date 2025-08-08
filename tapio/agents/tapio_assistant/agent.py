@@ -1,8 +1,11 @@
 """Tapio Assistant ADK Agent - RAG-powered Finnish immigration assistant."""
 
 import logging
+import os
+from typing import Any
 
 from google.adk.agents import LlmAgent
+from google.adk.models import Gemini
 from google.adk.tools import FunctionTool
 
 from tapio.services.rag_orchestrator import RAGOrchestrator
@@ -21,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 class TapioRAGTool:
     """Tool for retrieving information from Finnish immigration documents using RAG."""
-
+    
     def __init__(
         self,
         collection_name: str = DEFAULT_CHROMA_COLLECTION,
@@ -31,7 +34,7 @@ class TapioRAGTool:
         num_results: int = DEFAULT_NUM_RESULTS,
     ) -> None:
         """Initialize the RAG tool.
-
+        
         Args:
             collection_name: Name of the ChromaDB collection
             persist_directory: Directory where the ChromaDB database is stored
@@ -46,35 +49,35 @@ class TapioRAGTool:
             max_tokens=max_tokens,
             num_results=num_results,
         )
-
+        
     def search_immigration_docs(self, query: str) -> str:
         """Search Finnish immigration documents for relevant information.
-
+        
         Args:
             query: The user's question about Finnish immigration
-
+            
         Returns:
             Relevant information and guidance from official Finnish immigration sources
         """
         try:
             logger.info(f"Processing RAG query: {query}")
-
+            
             # Use the existing RAG orchestrator to get response and documents
             response, retrieved_docs = self.rag_orchestrator.query(
                 query_text=query,
                 history=None,
             )
-
+            
             # Format the response with source information
             formatted_docs = self.rag_orchestrator.format_documents_for_display(
                 retrieved_docs,
             )
-
+            
             # Combine response with sources for transparency
             full_response = f"{response}\n\n**Sources:**\n{formatted_docs}"
-
+            
             return full_response
-
+            
         except Exception as e:
             logger.error(f"Error in RAG search: {e}")
             return (
@@ -89,41 +92,37 @@ def create_tapio_agent(
     persist_directory: str = DEFAULT_CHROMA_DB_PATH,
 ) -> LlmAgent:
     """Create and configure the Tapio Assistant agent.
-
+    
     Args:
         model_name: Name of the LLM model to use (defaults to env var or llama3.2)
         collection_name: Name of the ChromaDB collection
         persist_directory: Directory where the ChromaDB database is stored
-
+        
     Returns:
         Configured Tapio Assistant agent
     """
     # Use environment variable or auto-detect based on available API keys
     if model_name is None:
         from tapio.config.settings import get_default_model
-
         model_name = get_default_model()
-
+    
     logger.info(f"Creating Tapio agent with model: {model_name}")
-
+    
     # Initialize the RAG tool
     rag_tool = TapioRAGTool(
         collection_name=collection_name,
         persist_directory=persist_directory,
         model_name=model_name,
     )
-
+    
     # Create function tool for RAG search
     search_tool = FunctionTool(func=rag_tool.search_immigration_docs)
-
+    
     # Create the agent with comprehensive instructions
     # ADK accepts model name as string and handles the backend automatically
     agent = LlmAgent(
         name="TapioAssistant",
-        description=(
-            "A helpful assistant specialized in Finnish immigration, "
-            "residence permits, work permits, family reunification, and citizenship."
-        ),
+        description="Finnish Immigration Assistant specializing in residence permits, work permits, family reunification, and citizenship.",
         model=model_name,  # ADK accepts model name as string
         instruction="""You are Tapio, a helpful assistant specializing in Finnish immigration processes. 
         You help EU and non-EU citizens navigate Finnish immigration, including:
@@ -152,7 +151,7 @@ def create_tapio_agent(
         """,
         tools=[search_tool],
     )
-
+    
     return agent
 
 

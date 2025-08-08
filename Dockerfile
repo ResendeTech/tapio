@@ -1,42 +1,22 @@
-# Use Python 3.12 slim image for production deployment
+# Use Python 3.12 slim image
 FROM python:3.12-slim
 
 # Set working directory
-WORKDIR /app
+WORKDIR /workspace
 
-# Install system dependencies and uv
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
+    git \
     curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && curl -LsSf https://astral.sh/uv/install.sh | sh
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
+# Install UV package manager
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.cargo/bin:$PATH"
 
-# Copy dependency files
-COPY pyproject.toml uv.lock ./
-
-# Install dependencies
-RUN uv sync --frozen --no-cache
-
-# Copy application code
-COPY . .
-
-# Install the project in editable mode
-RUN uv pip install -e .
-
-# Create non-root user for security
-RUN useradd -m -u 1000 tapio && chown -R tapio:tapio /app
-USER tapio
-
-# Expose port
-EXPOSE 8000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
-
-# Run the application
-CMD ["uv", "run", "tapio", "adk-server", "--host", "0.0.0.0", "--port", "8000"]
+# Install Ollama
+RUN curl -fsSL https://ollama.ai/install.sh | sh
 
 # Copy project files
 COPY . .

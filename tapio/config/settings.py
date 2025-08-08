@@ -7,7 +7,7 @@ for storing crawled and parsed content.
 
 import os
 from pathlib import Path
-
+from typing import Optional
 
 # Load .env file if it exists
 def load_env_file():
@@ -43,7 +43,7 @@ DEFAULT_CHROMA_COLLECTION = "tapio_knowledge"
 DEFAULT_CRAWLER_TIMEOUT = 30
 
 # API Keys and Authentication
-def get_gemini_api_key() -> str | None:
+def get_gemini_api_key() -> Optional[str]:
     """Get Gemini API key from environment variables.
     
     Checks the following environment variables in order:

@@ -1,5 +1,6 @@
 """Model configuration for ADK agents."""
 
+from typing import Dict, Any, Optional
 from dataclasses import dataclass
 
 
@@ -14,7 +15,7 @@ class ModelConfig:
     
     
 # Predefined model configurations
-MODEL_CONFIGS: dict[str, ModelConfig] = {
+MODEL_CONFIGS: Dict[str, ModelConfig] = {
     # Ollama models (local)
     "llama3.2": ModelConfig(
         name="llama3.2:latest",
@@ -81,7 +82,7 @@ def get_model_config(model_name: str) -> ModelConfig:
     )
 
 
-def list_available_models() -> dict[str, ModelConfig]:
+def list_available_models() -> Dict[str, ModelConfig]:
     """List all available model configurations.
     
     Returns:

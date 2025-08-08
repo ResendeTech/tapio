@@ -1,29 +1,11 @@
 version: '3.8'
 
 services:
-  tapio-chat:
+  tapio-adk:
     build: .
     ports:
       - "8000:8000"
-    environment:
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - TAPIO_DEFAULT_MODEL=gemini-2.0-flash
-      - PYTHONPATH=/app
-    volumes:
-      - ./chroma_db:/app/chroma_db:ro  # Mount vector database if available
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  # Optional: Local version with Ollama
-  tapio-local:
-    build: .
-    ports:
-      - "8001:8000"
+      - "8001:8001"
       - "11434:11434"
     volumes:
       - .:/workspace
@@ -39,8 +21,6 @@ services:
         ollama list | grep -q llama3.2 || ollama pull llama3.2 &&
         uv run tapio adk-server --host 0.0.0.0 --port 8000
       "
-    profiles:
-      - local  # Only start with --profile local
 
 volumes:
   ollama_data:

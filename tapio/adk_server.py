@@ -1,7 +1,9 @@
 """ADK-based server implementation for Tapio Assistant."""
 
 import logging
+import os
 from pathlib import Path
+from typing import Optional
 
 from google.adk.cli.fast_api import get_fast_api_app
 
@@ -15,7 +17,7 @@ class TapioADKServer:
 
     def __init__(
         self,
-        agents_dir: str | None = None,
+        agents_dir: Optional[str] = None,
         host: str = "127.0.0.1",
         port: int = 8000,
         enable_web_ui: bool = True,
@@ -106,7 +108,7 @@ class TapioADKServer:
 
 
 def launch_tapio_adk_server(
-    agents_dir: str | None = None,
+    agents_dir: Optional[str] = None,
     host: str = "127.0.0.1",
     port: int = 8000,
     enable_web_ui: bool = True,
